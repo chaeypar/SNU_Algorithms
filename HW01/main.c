@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<time.h>
+//#include<time.h>
 #define MAXNUM 5000000
 
 int arr[MAXNUM];
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
     }
     
     //Open the output file. If there exist any errors, then terminate the program.
-    FILE *fpout=fopen(argv[3], "wb");
+    FILE *fpout=fopen(argv[3], "w");
     if (!fpout){
         printf("Failure to open the output file. Program is terminated.\n");
         fclose(fpin);
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
     }
 
     //If mode=1, we should execute randomized selection algorithm.
-    //If mode=2, we shoudl execute deterministic selection algorithm.
+    //If mode=2, we should execute deterministic selection algorithm.
     switch (mode){
         case 1:
             //start = clock();
