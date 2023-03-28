@@ -8,6 +8,7 @@ int arr[MAXNUM];
 int partition(int p, int r);
 int randomized_select(int p, int r, int i);
 void insertion_sort(int p, int r);
+int partition_with_pivot(int p, int r, int pividx);
 int deterministic_select(int p, int r, int i);
 
 int main(int argc, char *argv[]){
@@ -54,18 +55,18 @@ int main(int argc, char *argv[]){
     //If mode=2, we shoudl execute deterministic selection algorithm.
     switch (mode){
         case 1:
-            start = clock();
+            //start = clock();
             ans = randomized_select(0, N-1, M);
-            end = clock();
+            //end = clock();
             break;
         case 2:
-            start = clock();
+            //start = clock();
             ans = deterministic_select(0, N-1, M);
-            end = clock();
+            //end = clock();
             break;
     }
     fprintf(fpout, "%d\n", ans);
-    printf("Total running time : %lfs\n", (double)(end-start)/CLOCKS_PER_SEC);
+    //printf("Total running time : %lfs\n", (double)(end-start)/CLOCKS_PER_SEC);
 
     fclose(fpin);
     fclose(fpout);

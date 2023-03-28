@@ -16,6 +16,7 @@ int main(int argc, char *argv[]){
     N=atoi(argv[1]);
     M=atoi(argv[2]);
     fprintf(fp, "%d %d\n", N, M);
+    
     for (int i=0;i<N;i++){
         if (rand()%2)
             fprintf(fp, "%d ", rand()%2147483647);
