@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
-#define MAXNUM 10000000
+#define MAXNUM 5000000
 
 int arr[MAXNUM];
 
