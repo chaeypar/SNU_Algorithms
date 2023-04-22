@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
     srand((unsigned int)time(NULL));
     for (int i = 0; i < num; i++){
         fprintf(fpin, "%c ", operation[rand()%4]);
-        fprintf(fpin, "%d\n", rand()%10000);
+        fprintf(fpin, "%d\n", rand()%9999+1);
     }
 
     fclose(fpin);
