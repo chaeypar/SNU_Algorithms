@@ -34,20 +34,21 @@ int main(int argc, char *argv[]){
     while(1){
         while (1){
             sp=fgetc(fpin);
-            if (!(sp == '\n' || sp == ' ')){
-                mode = sp;
-                break;
-            }
+            if (sp == '\n' || sp == ' ')
+                continue;
             else if (sp == EOF){
                 closefile(fpin, fpout);
                 printf("1\n");
                 return 0;
             }
+            else{
+                mode = sp;
+                break;
+            }
         }
 
         fscanf(fpin, "%d", &op);
         fscanf(fpout, "%d", &num);
-        
         switch(mode){
             case 'I':
                 if (!A[op]){
@@ -74,9 +75,7 @@ int main(int argc, char *argv[]){
                 }
                 break;
             case 'S':
-                if (num > cnt)
-                    err = 1;
-                else{
+                if (op <= cnt){
                     int tot = 0, idx = 1;
                     while (1){
                         tot += A[idx];
@@ -85,6 +84,10 @@ int main(int argc, char *argv[]){
                         idx++;
                     }
                     if (idx != num)
+                        err = 1;
+                }
+                else{
+                    if (num != 0)
                         err = 1;
                 }
                 break;

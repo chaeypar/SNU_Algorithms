@@ -27,16 +27,15 @@ void resetTree(Tree **tree){
     (*tree)->root->p = nil;
 }
 
-void nodefree(Node *node){
-    if (node->left){
-        nodefree(node->left);
+void nodefree(Tree* tree, Node *node){
+    if (node->left != tree->nil){
+        nodefree(tree, node->left);
         node->left = NULL;
     }
-    if (node->right){
-        nodefree(node->right);
+    if (node->right != tree->nil){
+        nodefree(tree, node->right);
         node->right = NULL;
     }
-    free(node);
 }
 
 void closefile(FILE *fpin, FILE *fpout){
@@ -150,9 +149,9 @@ int OS_Insert(Tree *tree, int op){
     node->left = node->right = tree->nil;
     node->key = op;
     node->red = 1;
-    node->size = 1;
-    
+    node->size = 1;   
     node->p = prev;
+
     if (prev == tree->nil)
         tree->root = node;
     else if (op < prev->key)
@@ -173,6 +172,7 @@ int OS_Insert(Tree *tree, int op){
     RB_Insert_Fixup(tree, node);
     return op;
 }
+
 void RB_Transplant(Tree *tree, Node *u, Node *v){
     if (u->p == tree->nil)
         tree->root = v;
@@ -221,7 +221,7 @@ void RB_Delete_Fixup(Tree *tree, Node *node){
                 rightRotate(tree, node->p);
                 w = node->p->left;
             }
-            if (!(w->left->red) && !(w->left->red)){
+            if (!(w->left->red) && !(w->right->red)){
                 w->red = 1;
                 node = node->p;
              }
@@ -235,7 +235,7 @@ void RB_Delete_Fixup(Tree *tree, Node *node){
                 else{
                     w->red = node->p->red;
                     node->p->red = 0;
-                    w->right->red = 0;
+                    w->left->red = 0;
                     rightRotate(tree, node->p);
                     node = tree->root;
                 }
@@ -254,7 +254,7 @@ Node *Tree_Minimum(Tree *tree, Node *node){
 int OS_Delete(Tree *tree, int op){
     
     Node *node = tree->root;
-    while (node!=tree->nil){
+    while (node != tree->nil){
         if (op == node->key)
             break;
         else if (op < node->key)
@@ -276,6 +276,8 @@ int OS_Delete(Tree *tree, int op){
 
         x = node->right;
         RB_Transplant(tree, node, node->right);
+        free(node);
+        node = NULL;
     }
     else if (node->right == tree->nil){
         Node *tp = node->p;
@@ -286,6 +288,8 @@ int OS_Delete(Tree *tree, int op){
 
         x = node->left;
         RB_Transplant(tree, node, node->left);
+        free(node);
+        node = NULL;
     }
     else{
         y = Tree_Minimum(tree, node->right);
@@ -295,6 +299,7 @@ int OS_Delete(Tree *tree, int op){
             (tp->size)--;
             tp = tp->p;
         }
+        y->size = node->size;
 
         original_red = y->red;
         x = y->right;
@@ -309,9 +314,13 @@ int OS_Delete(Tree *tree, int op){
         y->left = node->left;
         y->left->p = y;
         y->red = node->red;
+        free(node);
+        node = NULL;
     }
     if (!original_red)
         RB_Delete_Fixup(tree, x);
+    
+    return op;
 }
 
 int RB_Select(Node *node, int i){
@@ -327,17 +336,14 @@ int RB_Select(Node *node, int i){
 int OS_Select(Tree *tree, int op){
     if (op > tree->root->size)
         return 0;
-    
-    Node *cur = tree->root;
+
     return RB_Select(tree->root, op);
 }
 
 int OS_Rank(Tree *tree, int op){
-    Node *prev;
     Node *node = tree->root;
 
     while (node != tree->nil){
-        prev = node;
         if (node->key == op)
             break;
         if (node->key > op)
@@ -392,10 +398,10 @@ int main(int argc, char *argv[]){
                 continue;
             else if (sp == EOF){
                 closefile(fpin, fpout);
-                if (tree->root){
-                    nodefree(tree->root);
-                    tree->root = NULL;
-                }
+                nodefree(tree, tree->root);
+                tree->root = NULL;
+                free(tree->nil);
+                tree->nil = NULL;
                 free(tree);
                 tree = NULL;
                 return 0;
@@ -406,7 +412,6 @@ int main(int argc, char *argv[]){
             }
         }
         fscanf(fpin, "%d", &op);
-        printf("%c\n", mode);
         switch(mode){
             case 'I':
                 num = OS_Insert(tree, op);
