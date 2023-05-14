@@ -3,13 +3,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-char adjMatrix[5001][5001];
-char reverseMatrix[5001][5001];
-int result[5001][5001];
-char visited[5001];
+char **adjMatrix;
+char **reverseMatrix;
+int **result;
+char *visited;
 
-int qu[5001];
-char visited[5001];
+int *qu;
 int cur = 0;
 int curidx;
 int rescnt;
@@ -25,6 +24,19 @@ int compare(const void *first, const void *second){
 
 void makeMatrix(FILE *fd, int n){
     int num, in, out;
+
+    result = (int **)malloc((n+1)*sizeof(int *));
+    adjMatrix = (char **)malloc((n+1)*sizeof(char *));
+    reverseMatrix = (char **)malloc((n+1)*sizeof(char *));
+
+    qu = (int *)malloc((n+1)*sizeof(int));
+    visited = (char *)malloc((n+1)*sizeof(char));
+
+    for (int i = 0;i <= n; i++){
+        adjMatrix[i] = (char *)calloc(n+1, sizeof(char));
+        reverseMatrix[i] = (char *)calloc(n+1, sizeof(char));
+        result[i] = (int *)calloc(n+1, sizeof(int));
+    }
 
     fscanf(fd, "%d", &num);
     for (int i = 0; i < num;i++){
@@ -54,7 +66,7 @@ void dfs_reverse(int i, int n){
     }
 }
 
-void calMatrix(int n){
+void calMatrix(FILE *fd, int n){
     memset(visited, 0, n+1);
     for (int i=1;i<=n;i++){
         if (!visited[i]){
@@ -84,13 +96,12 @@ void calMatrix(int n){
         }
         arr[arrcnt++] = tot;
     }
-    printf("%d\n", rescnt);
+    fprintf(fd, "%d\n", rescnt);
     qsort(arr, arrcnt, sizeof(int), compare);
     for (int i = 0; i < arrcnt - 1; i++){
-        printf("%d ", arr[i]);
+        fprintf(fd, "%d ", arr[i]);
     }
-    printf("%d", arr[arrcnt-1]);
-    printf("\n");
+    fprintf(fd, "%d\n", arr[arrcnt-1]);
 }
 
 int main(int argc, char *argv[]){
@@ -104,7 +115,7 @@ int main(int argc, char *argv[]){
     }
 
     //If argv[1] is not 1 or 2, then it is not valid.
-    mode=atoi(argv[1]);
+    mode = atoi(argv[1]);
     if (mode!=1 && mode!=2 && mode!=3){
         printf("The mode is invalid. It should be either 1 or 2.\n");
             return -1;
@@ -117,11 +128,19 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
+    //Open the output file. If there exist any errors, then terminate the program.
+    FILE *fpout=fopen(argv[3], "w");
+    if (!fpout){
+        printf("Failure to open the output file. Program is terminated.\n");
+        fclose(fpin);
+        return -1;
+    }
+
     fscanf(fpin, "%d", &n);
     switch(mode){
         case 1:
             makeMatrix(fpin, n);
-            calMatrix(n);
+            calMatrix(fpout, n);
             break;
         case 2:
             break;
@@ -131,13 +150,6 @@ int main(int argc, char *argv[]){
     }
     
 
-    //Open the output file. If there exist any errors, then terminate the program.
-    FILE *fpout=fopen(argv[3], "w");
-    if (!fpout){
-        printf("Failure to open the output file. Program is terminated.\n");
-        fclose(fpin);
-        return -1;
-    }
 
     return 0;
 }
