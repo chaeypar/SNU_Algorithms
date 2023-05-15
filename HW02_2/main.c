@@ -31,6 +31,9 @@ int cur = 0;
 int curidx;
 int rescnt;
 
+// To sort the results in an ascending order
+int compare(const void *first, const void *second);
+
 // To print the result at the output file
 void find_answer(FILE *fd);
 
@@ -56,18 +59,8 @@ void dfs_regular_arr(int i, int n);
 void dfs_reverse_arr(int i, int n);
 void calArray(FILE *fd, int n);
 
-int compare(const void *first, const void *second){
-    if (*(int *)first > *(int *)second)
-        return 1;
-    else if (*(int *)first < *(int *)second)
-        return -1;
-    return 0;
-}
-
 int main(int argc, char *argv[]){
-
     int n, mode;
-
     //There should be four arguments, i.e. executable file, mode, input file and output file.
     if (argc!=4){
         printf("There should be four arguments. Check once again.\n");
@@ -118,6 +111,15 @@ int main(int argc, char *argv[]){
     // Close the input and output file
     fclose(fpin);
     fclose(fpout);
+    return 0;
+}
+
+// compare : to sort the results in an ascending order
+int compare(const void *first, const void *second){
+    if (*(int *)first > *(int *)second)
+        return 1;
+    else if (*(int *)first < *(int *)second)
+        return -1;
     return 0;
 }
 
