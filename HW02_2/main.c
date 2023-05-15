@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <time.h>
+//#include <time.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -59,6 +59,10 @@ void dfs_regular_arr(int i, int n);
 void dfs_reverse_arr(int i, int n);
 void calArray(FILE *fd, int n);
 
+int c;
+// To calculate the operation time of the algorithms
+//time_t start, end;
+
 int main(int argc, char *argv[]){
     int n, mode;
     //There should be four arguments, i.e. executable file, mode, input file and output file.
@@ -89,7 +93,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    fscanf(fpin, "%d", &n);
+    c = fscanf(fpin, "%d", &n);
     switch(mode){
         // Mode 1: an adjacency matrix
         case 1:
@@ -107,7 +111,8 @@ int main(int argc, char *argv[]){
             calArray(fpout, n);
             break;
     }
-
+    //printf("Total running time : %lfs\n", (double)(end-start)/CLOCKS_PER_SEC);
+    
     // Close the input and output file
     fclose(fpin);
     fclose(fpout);
@@ -170,9 +175,9 @@ void makeMatrix(FILE *fd, int n){
     }
 
     // to initialize an adjacent matrix and its reverse one
-    fscanf(fd, "%d", &num);
+    c = fscanf(fd, "%d", &num);
     for (int i = 0; i < num;i++){
-        fscanf(fd, "%d %d", &in, &out);
+        c = fscanf(fd, "%d %d", &in, &out);
         adjMatrix[in][out] = 1;
         reverseMatrix[out][in] = 1;
     }
@@ -206,6 +211,7 @@ void dfs_reverse_matrix(int i, int n){
 // calMatrix: to find strongly connected components
 void calMatrix(FILE *fd, int n){
     // run dfs on a graph
+    //start = clock();
     memset(visited, 0, n+1);
     for (int i=1;i<=n;i++){
         if (!visited[i]){
@@ -225,6 +231,7 @@ void calMatrix(FILE *fd, int n){
             rescnt++;
         }
     }
+    //end = clock();
     //to print the output at the output file
     find_answer(fd);
 }
@@ -340,6 +347,7 @@ void dfs_reverse_list(int i, int n){
 
 // calList : to find strongly connected components
 void calList(FILE *fd, int n){
+    //start = clock();
     // run dfs on a gragh
     memset(visited, 0, n+1);
     for (int i=1;i<=n;i++){
@@ -360,6 +368,7 @@ void calList(FILE *fd, int n){
             rescnt++;
         }
     }
+    //end = clock();
     //to print the output at the output file
     find_answer(fd);
 }
@@ -388,9 +397,9 @@ void makeArray(FILE *fd, int n){
     }
 
     // to initialize an adjacent matrix and its reversed one
-    fscanf(fd, "%d", &num);
+    c = fscanf(fd, "%d", &num);
     for (int i = 0; i < num;i++){
-        fscanf(fd, "%d %d", &in, &out);
+        c = fscanf(fd, "%d %d", &in, &out);
         // calculate the number of edges for G and G_r
         vertices_cnt[in]++;
         reverse_vertices_cnt[out]++;
@@ -481,6 +490,7 @@ void dfs_reverse_arr(int i, int n){
 
 // calArray : to find strongly connected components
 void calArray(FILE *fd, int n){
+    //start = clock();
     // run dfs on a graph
     memset(visited, 0, n+1);
     for (int i=1;i<=n;i++){
@@ -501,6 +511,7 @@ void calArray(FILE *fd, int n){
             rescnt++;
         }
     }
+    //end = clock();
     // to print the output at the output file
     find_answer(fd);
 }
