@@ -62,16 +62,12 @@ int checkR(int i, int j, int n){
 }
 
 void recursive_N(int i, int k, int cur, int n){
-    if (cur == n){
-        cnt++;
-        printMap(n);
-        return;
-    }
-    else if (i == n){
+    if (i == n){
+        if (cur == n)
+            cnt++;       
         //printMap(n);
         return;
     }
-    int flag = 0;
     for (int j = k;j < n;j++){
         if (map[i][j]=='H')
             continue;
@@ -156,7 +152,6 @@ void recursive_N(int i, int k, int cur, int n){
             case 4:
                 map[i][j] = 'Q';
                 v[j] = l[i-j+n] =r[i+j] = 1;
-                int flag = 0;
                 if (h[i]){
                     for (int idx = j + 1; idx < n - 1; idx++){
                         if (map[i][idx]=='H'){
@@ -176,7 +171,109 @@ void recursive_N(int i, int k, int cur, int n){
     
 }
 
-void makeMap(int n, int holenum){
+int map_x[20], map_y[20];
+int iter_l[20], iter_r[20];
+int iter_cnt;
+int iter_tot;
+int iter_possible(int i, int j, int n){
+    int flag, k;
+    for (k = 0; k < iter_cnt; k++){
+        if (j == map_y[k]){
+            if (v[j] == 'H'){
+                for (int p = map_x[k]+1; p < i;p++){
+                    if (map[p][j] == 'H')
+                        return 1;
+                }
+            }
+            else
+                return 0;
+        }
+        else if (i - j + n == iter_l[k]){
+            if (l[i-j+n] == 'H'){
+                int left = map_x[k], right = map_y[k];
+                while (left != i && right != j){
+                    if (map[left][right] == 'H')
+                        return 1;
+                    left++;
+                    right++;
+                }
+            }
+            else
+                return 0;
+        }
+        else if (i + j == iter_r[k]){
+            if (r[i+j] == 'H'){
+                int left = map_x[k], right = map_y[k];
+                while (left != i && right != j){
+                    if (map[left][right] == 'H')
+                        return 1;
+                    left++;
+                    right--;
+                }
+            }
+            else
+                return 0;
+        }
+    }
+    return 1;
+}
+
+void iterative_N(int n){
+    int cur_r = 0, cur_c = 0;
+    int cnt = 0;
+    while (cur_r >= 0){
+        while (cur_c < n){
+            printf("%d %d %d\n", cur_r, cur_c, iter_cnt);
+            if (map[cur_r][cur_c] == 'H'){
+                cur_c++;
+                continue;
+            }
+            else if (!iter_possible(cur_r, cur_c, n))
+                cur_c++;
+            else {
+                map_x[iter_cnt] = cur_r;
+                map_y[iter_cnt] = cur_c;
+                iter_l[iter_cnt] = cur_r-cur_c+n;
+                iter_r[iter_cnt] = cur_r+cur_c;
+                iter_cnt++;
+
+                if (h[cur_r]){
+                    int idx;
+                    printf("AA%d %d\n",cur_r, cur_c);
+                    for (idx = cur_c + 1; idx < n - 1; idx++){
+                        if (map[cur_c][idx]=='H'){
+                            cur_c = idx + 1;
+                            break;
+                        }
+                    }
+                    if (idx >= n - 1){
+                        cur_r++;
+                        cur_c = 0;
+                    }
+                }
+                else {
+                    cur_r++;
+                    cur_c = 0;
+                }
+            }
+        }
+        if (cur_c == n){
+            cur_r++;
+            cur_c = 0;
+        }
+        if (cur_r == n){
+            printf("%d %d %daaa", cur_r, cur_c, iter_tot);
+            if (iter_cnt == n){
+                iter_tot++;
+            }
+            iter_tot--;
+            cur_r = map_x[iter_tot];
+            cur_c = map_y[iter_tot];
+        }
+    }
+}
+
+void makeMap(FILE *fd, int n, int holenum){
     map = (char **)malloc(n * sizeof(char *));
     for (int i=0;i<n;i++){
         map[i] = (char *)malloc(n*sizeof(char));
@@ -189,20 +286,58 @@ void makeMap(int n, int holenum){
     h = (char *)calloc(n, sizeof(char));
     v = (char *)calloc(n, sizeof(char));
     for (int i = 0; i < holenum; i++){
-        scanf("%d %d", &t1, &t2);
+        fscanf(fd, "%d %d", &t1, &t2);
         map[t1-1][t2-1] = 'H';
         l[t1 - t2 + n] = r[t1 + t2 - 2] = h[t1-1] = v[t2-1] = 'H';
     }
-    printMap(n);
+    //printMap(n);
 }
 
-int main(void){
-    int n, holenum, t1, t2;
+int main(int argc, char *argv[]){
+    int n, holenum, t1, t2, mode;
+    //There should be four arguments, i.e. executable file, mode, input file and output file.
+    if (argc!=4){
+        printf("There should be four arguments. Check once again.\n");
+        return -1;
+    }
 
-    scanf("%d %d", &n, &holenum);
-    makeMap(n, holenum);
+    //If argv[1] is not 1 or 2, then it is not valid.
+    mode = atoi(argv[1]);
+    if (mode!=1 && mode!=2){
+        printf("The mode is invalid. It should be either 1 or 2.\n");
+            return -1;
+    }
+
+    //Open the input file. If there exist any errors, then terminate the program.
+    FILE *fpin=fopen(argv[2], "r");
+    if (!fpin){
+        printf("Failure to open the input file. Program is terminated.\n");
+        return -1;
+    }
+
+    //Open the output file. If there exist any errors, then terminate the program.
+    FILE *fpout=fopen(argv[3], "w");
+    if (!fpout){
+        printf("Failure to open the output file. Program is terminated.\n");
+        fclose(fpin);
+        return -1;
+    }
+
+    fscanf(fpin, "%d %d", &n, &holenum);
+    makeMap(fpin, n, holenum);
     cnt = 0;
-    recursive_N(0, 0, 0, n);
-    printf("%d\n", cnt);
+    switch(mode){
+        case 1:
+            iterative_N(n);
+            printf("%d\n", iter_tot);
+            break;
+        case 2:
+            recursive_N(0, 0, 0, n);
+            fprintf(fpout, "%d\n", cnt);
+            break;
+    }
+
+    fclose(fpin);
+    fclose(fpout);
     return 0;
 }
