@@ -1,12 +1,14 @@
 #include<iostream>
 #include<stack>
+#include<time.h>
 
 using namespace std;
 stack<pair<int,int>> qu;
 
-char **map;
-char *l, *r, *h, *v;
+char map[15][15];
+char l[30], r[30], h[15], v[15];
 int cnt;
+int holeh[15][4];
 
 int possible(int i, int j, int n){
     if (v[j] == 1|| l[i-j+n] == 1|| r[i+j] ==1)
@@ -91,11 +93,12 @@ void recursive_N(int i, int k, int cur, int n){
                     if (!r[i+j])
                         r[i+j] = 1;
                 if (h[i]){
-                    for (int idx = j+1; idx < n-1; idx++){
-                        if (map[i][idx]=='H'){        
-                            recursive_N(i, idx+1, cur+1, n);
-                            break;
-                        }
+                    int num = holeh[i][0];
+                    for (int idx = 1; idx <= num; idx++){
+                        if (holeh[i][idx] <= j)
+                            continue;   
+                        recursive_N(i, holeh[i][idx]+1, cur+1, n);
+                        break;
                     }
                 }
                 recursive_N(i+1, 0, cur+1, n);
@@ -138,13 +141,14 @@ void recursive_N(int i, int k, int cur, int n){
                     map[i][j] = 'Q';
                     v[j] = l[i-j+n] = 1;
                     if (h[i]){
-                        for (int idx = j + 1; idx < n - 1; idx++){
-                            if (map[i][idx]=='H'){
-                                recursive_N(i, idx+1, cur+1, n);
-                                break;
-                            }
-                        }
+                    int num = holeh[i][0];
+                    for (int idx = 1; idx <= num; idx++){
+                        if (holeh[i][idx] <= j)
+                            continue;   
+                        recursive_N(i, holeh[i][idx]+1, cur+1, n);
+                        break;
                     }
+                }
                     recursive_N(i+1, 0, cur+1, n);
                     map[i][j] = '*';
                     v[j] = l[i-j+n] = 0;
@@ -156,11 +160,12 @@ void recursive_N(int i, int k, int cur, int n){
                 map[i][j] = 'Q';
                 v[j] = l[i-j+n] =r[i+j] = 1;
                 if (h[i]){
-                    for (int idx = j + 1; idx < n - 1; idx++){
-                        if (map[i][idx]=='H'){
-                            recursive_N(i, idx+1, cur+1, n);
-                            break;
-                        }
+                    int num = holeh[i][0];
+                    for (int idx = 1; idx <= num; idx++){
+                        if (holeh[i][idx] <= j)
+                            continue;   
+                        recursive_N(i, holeh[i][idx]+1, cur+1, n);
+                        break;
                     }
                 }
                 recursive_N(i+1, 0, cur+1, n);
@@ -205,17 +210,18 @@ void iterative_N(int n){
                             r[i+j] = 1;
                         if (h[i]){
                             int flag = 0;
-                            for (int idx = j+1; idx < n-1; idx++){
-                                if (map[i][idx]=='H'){        
-                                    j = idx + 1;
-                                    flag = 1;
-                                    break;
-                                }
+                            int num = holeh[i][0];
+                            for (int idx = 1; idx <= num; idx++){
+                                if (holeh[i][idx] <= j)
+                                    continue;        
+                                j = holeh[i][idx] + 1;
+                                flag = 1;
+                                break;
                             }
-                                if (!flag){
-                                    i++;
-                                    j = 0;
-                                }
+                            if (!flag){
+                                i++;
+                                j = 0;
+                            }
                         }
                         else{
                             i++;
@@ -239,12 +245,13 @@ void iterative_N(int n){
                             r[i+j] = 1;
                         if (h[i]){
                             int flag = 0;
-                            for (int idx = j + 1; idx < n - 1 ;idx++){
-                                if (map[i][idx]=='H'){ 
-                                    j = idx + 1;
-                                    flag = 1;
-                                    break;
-                                }
+                            int num = holeh[i][0];
+                            for (int idx = 1; idx <= num; idx++){
+                                if (holeh[i][idx] <= j)
+                                    continue;        
+                                j = holeh[i][idx] + 1;
+                                flag = 1;
+                                break;
                             }
                             if (!flag){
                                 i++;
@@ -267,12 +274,13 @@ void iterative_N(int n){
                         v[j] = l[i-j+n] = 1;
                         if (h[i]){
                             int flag = 0;
-                            for (int idx = j + 1; idx < n - 1; idx++){
-                                if (map[i][idx]=='H'){
-                                    j = idx + 1;
-                                    flag = 1;
-                                    break;
-                                }
+                            int num = holeh[i][0];
+                            for (int idx = 1; idx <= num; idx++){
+                                if (holeh[i][idx] <= j)
+                                    continue;        
+                                j = holeh[i][idx] + 1;
+                                flag = 1;
+                                break;
                             }
                             if (!flag){
                                 i++;
@@ -294,17 +302,18 @@ void iterative_N(int n){
                     v[j] = l[i-j+n] = r[i+j] = 1;
                     if (h[i]){
                         int flag = 0;
-                        for (int idx = j + 1; idx < n - 1; idx++){
-                            if (map[i][idx]=='H'){
-                                j = idx + 1;
-                                flag = 1;
-                                break;
-                            }
+                        int num = holeh[i][0];
+                        for (int idx = 1; idx <= num; idx++){
+                            if (holeh[i][idx] <= j)
+                                continue;        
+                            j = holeh[i][idx] + 1;
+                            flag = 1;
+                            break;
                         }
                         if (!flag){
                             i++;
                             j = 0;
-                        }
+                       }
                     }
                     else{
                         i++;
@@ -351,21 +360,17 @@ void iterative_N(int n){
 }
 
 void makeMap(FILE *fd, int n, int holenum){
-    map = (char **)malloc(n * sizeof(char *));
     for (int i=0;i<n;i++){
-        map[i] = (char *)malloc(n*sizeof(char));
         for (int j = 0;j < n; j++)
             map[i][j] = '*';
     }
     int t1, t2;
-    l = (char *)calloc(2*n, sizeof(char));
-    r = (char *)calloc(2*n, sizeof(char));
-    h = (char *)calloc(n, sizeof(char));
-    v = (char *)calloc(n, sizeof(char));
     for (int i = 0; i < holenum; i++){
         fscanf(fd, "%d %d", &t1, &t2);
         map[t1-1][t2-1] = 'H';
         l[t1 - t2 + n] = r[t1 + t2 - 2] = h[t1-1] = v[t2-1] = 'H';
+        holeh[t1-1][0]++; 
+        holeh[t1-1][holeh[t1-1][0]] = t2-1;
     }
 }
 
