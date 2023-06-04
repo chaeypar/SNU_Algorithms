@@ -7,7 +7,7 @@ stack<pair<int,int>> qu;
 
 char map[15][15];
 char l[30], r[30], h[15], v[15];
-int cnt;
+int cnt, holenum;
 int holeh[15][4];
 
 int possible(int i, int j, int n){
@@ -69,10 +69,11 @@ int checkR(int i, int j, int n){
 void recursive_N(int i, int k, int cur, int n){
     if (i == n){
         if (cur == n)
-            cnt++;       
-        //printMap(n);
+            cnt++;
         return;
     }
+    else if (i-cur > holenum)
+        return;
     for (int j = k;j < n;j++){
         if (map[i][j]=='H')
             continue;
@@ -141,14 +142,14 @@ void recursive_N(int i, int k, int cur, int n){
                     map[i][j] = 'Q';
                     v[j] = l[i-j+n] = 1;
                     if (h[i]){
-                    int num = holeh[i][0];
-                    for (int idx = 1; idx <= num; idx++){
-                        if (holeh[i][idx] <= j)
-                            continue;   
-                        recursive_N(i, holeh[i][idx]+1, cur+1, n);
-                        break;
+                        int num = holeh[i][0];
+                        for (int idx = 1; idx <= num; idx++){
+                            if (holeh[i][idx] <= j)
+                                continue;   
+                            recursive_N(i, holeh[i][idx]+1, cur+1, n);
+                            break;
+                        }
                     }
-                }
                     recursive_N(i+1, 0, cur+1, n);
                     map[i][j] = '*';
                     v[j] = l[i-j+n] = 0;
@@ -353,8 +354,11 @@ void iterative_N(int n){
             if (r[i+j] != 'H')
                 r[i+j] = 0;
             j++;
-            if (qu.size() == 0 &&i == n-1 && j >= n-2)
+            if (qu.size() == 0 && (i == n-1 || i > holenum))
                 return;
+        }
+        if (qu.size() == 0 && i > holenum){
+            return;
         }
     }
 }
@@ -375,7 +379,7 @@ void makeMap(FILE *fd, int n, int holenum){
 }
 
 int main(int argc, char *argv[]){
-    int n, holenum, t1, t2, mode;
+    int n, t1, t2, mode;
     //There should be four arguments, i.e. executable file, mode, input file and output file.
     if (argc!=4){
         printf("There should be four arguments. Check once again.\n");
