@@ -7,20 +7,19 @@ stack<pair<int,int>> qu;
 
 char map[15][15];
 char l[30], r[30], h[15], v[15];
-int cnt, holenum;
+int cnt;
 int holeh[15][4];
 
+// possible: to check whether a queen can be placed on (i, j)
 int possible(int i, int j, int n){
+    // impossible
     if (v[j] == 1|| l[i-j+n] == 1|| r[i+j] ==1)
         return 0;
-    else if (v[j])
-        return 1;
-    else if (l[i - j + n])
-        return 2;
-    else if (r[i + j])
-        return 3;
-    return 4;
+    // may be possible (need to check more)
+    return 1;
 }
+
+// printMap : for debugging (It prints the map status)
 void printMap(int n){
     printf("%d map: \n", cnt);
     for (int i = 0; i < n;i++){
@@ -32,20 +31,26 @@ void printMap(int n){
     printf("\n");
 }
 
+// checkV: It checks whether a queen can be placed on (i, j) when there is a hole on (k, j) for some  0 <= k < i
 int checkV(int i, int j, int n){
     for (int k = i-1; k >= 0;k --){
+        // There is a hole.
         if (map[k][j]=='H')
             return 1;
+        // There is a queen that attacks (i, j)
         else if (map[k][j]=='Q')
             return 0;
     }
     return 1;
 }
 
+// CheckL : It checks whether a queen can be placed on (i, j) when there is a hole on (k, i-j+n-k) for some 0 <= k < i
 int checkL(int i, int j, int n){
     while (i>=0 && j>=0){
+        // There is a hole
         if (map[i][j]=='H')
             return 1;
+        // There is a queen that attacks (i, j)
         else if (map[i][j]=='Q')
             return 0;
         i--;
@@ -54,10 +59,13 @@ int checkL(int i, int j, int n){
     return 1;
 }
 
+// CheckR : It checks whether a queen can be placed on (i, j) when there is a hole on (k, i+j-k) for some 0 <= k < i
 int checkR(int i, int j, int n){
     while(i>=0 && j<n){
+        // There is a hole
         if (map[i][j]=='H')
             return 1;
+        //There is a queen that attacks (i, j)
         else if (map[i][j]=='Q')
             return 0;
         i--;
@@ -66,244 +74,120 @@ int checkR(int i, int j, int n){
     return 1;
 }
 
+// recursive_N : recursive backtracking algorithm  
 void recursive_N(int i, int k, int cur, int n){
+    // finished to check the rows 
     if (i == n){
         if (cur == n)
-            cnt++;
+            cnt++;       
+        // printMap(n);
         return;
     }
-    else if (i-cur > holenum)
-        return;
     for (int j = k;j < n;j++){
+        // If the hole is placed on (i, j), the queen can't be placed on that location.
         if (map[i][j]=='H')
             continue;
         switch(possible(i, j, n)){
-            //not possible
+            // It is impossible to put a queen on (i, j)
             case 0:
                 continue;
-            //v is marked as 'H'
+            // There is at least one hole on the vertical line or left diagonal or right diagonal
             case 1:
-                if (checkV(i, j, n)){
-                    if (l[i-j+n] && !checkL(i, j, n))
-                        continue;
-                    if (r[i+j] && !checkR(i, j, n))
-                        continue;
-                    map[i][j] = 'Q';
-                    if (!l[i-j+n])
-                        l[i-j+n] = 1;
-                    if (!r[i+j])
-                        r[i+j] = 1;
-                if (h[i]){
-                    int num = holeh[i][0];
-                    for (int idx = 1; idx <= num; idx++){
-                        if (holeh[i][idx] <= j)
-                            continue;   
-                        recursive_N(i, holeh[i][idx]+1, cur+1, n);
-                        break;
-                    }
-                }
-                recursive_N(i+1, 0, cur+1, n);
-                    map[i][j]='*';
-                    if (l[i-j+n] == 1)
-                        l[i-j+n] = 0;
-                    if (r[i+j] == 1)
-                        r[i+j] = 0;
-                }else
+                // If there is a queen that attacks (i, j) on the vertical line
+                if (v[j] && !checkV(i, j, n))
                     continue;
-                break;
-            //l is marked as 'H'
-            case 2:
-                if (checkL(i, j, n)){
-                    if (r[i+j] && !checkR(i, j, n))
-                        continue;
-                    map[i][j]='Q';
-                    v[j] = 1;
-                    if (!r[i+j])
-                        r[i+j] = 1;
-                    if (h[i]){
-                        for (int idx = j + 1; idx < n - 1 ;idx++){
-                            if (map[i][idx]=='H'){ 
-                                recursive_N(i, idx+1, cur+1, n);
-                                break;
-                            }
-                        }
-                    }
-                    recursive_N(i+1, 0, cur+1, n);
-                    map[i][j]='*';
-                    v[j] = 0;
-                    if (r[i+j] == 1)
-                        r[i+j] = 0;
-                }else   
+                // If there is a queen that attacks (i, j) on the left diagonal
+                if (l[i-j+n] && !checkL(i, j, n))
                     continue;
-                break;
-            //r is marked as 'H'
-            case 3:
-                if (checkR(i, j, n)){
-                    map[i][j] = 'Q';
-                    v[j] = l[i-j+n] = 1;
-                    if (h[i]){
-                        int num = holeh[i][0];
-                        for (int idx = 1; idx <= num; idx++){
-                            if (holeh[i][idx] <= j)
-                                continue;   
-                            recursive_N(i, holeh[i][idx]+1, cur+1, n);
-                            break;
-                        }
-                    }
-                    recursive_N(i+1, 0, cur+1, n);
-                    map[i][j] = '*';
-                    v[j] = l[i-j+n] = 0;
-                }else
+                // If there is a queen that attacks (i, j) on the right diagnal
+                if (r[i+j] && !checkR(i, j, n))
                     continue;
-                break;
-            //clean board as 'H'
-            case 4:
+                // place a queen on (i, j)
                 map[i][j] = 'Q';
-                v[j] = l[i-j+n] =r[i+j] = 1;
+                if (!v[j])
+                    v[j] = 1;
+                if (!l[i-j+n])
+                    l[i-j+n] = 1;
+                if (!r[i+j])
+                    r[i+j] = 1;
+                // If there is a hole on the horizontal line passing through (i, j)
                 if (h[i]){
+                    // find the nearest hole on the right side of (i, j)
                     int num = holeh[i][0];
                     for (int idx = 1; idx <= num; idx++){
                         if (holeh[i][idx] <= j)
-                            continue;   
+                            continue;
+                        //recursive call
                         recursive_N(i, holeh[i][idx]+1, cur+1, n);
                         break;
                     }
                 }
+                // recursive for the next row
                 recursive_N(i+1, 0, cur+1, n);
-                map[i][j] = '*';
-                v[j] = l[i-j+n] = r[i+j] = 0;
-                break;
-        }
+
+                // remove a queen from (i, j)
+                map[i][j]='*';
+                if (v[j] == 1)
+                    v[j] = 0;
+                if (l[i-j+n] == 1)
+                    l[i-j+n] = 0;
+                if (r[i+j] == 1)
+                    r[i+j] = 0;
+            }
     }
+    // not place any queen on the i-th row
     if (k==0)
         recursive_N(i+1, 0, cur, n);
     
 }
 
+// Iterative backtracking algorithm
 void iterative_N(int n){
     int i = 0, j = 0;
 
     while (i != n){
         while (j < n){
+            // If the hole is placed on (i, j), the queen can't be placed on that location
             if (map[i][j] == 'H'){
                 j++;
                 continue;
             }
             switch(possible(i, j, n)){
+                // It is impossible to put a queen on (i, j)
                 case 0:
                     j++;
                     break;
-                case 1:        
-                    if (checkV(i, j, n)){
-                        if (l[i-j+n] && !checkL(i, j, n)){
-                            j++;
-                            continue;
-                        }
-                        if (r[i+j] && !checkR(i, j, n)){
-                            j++;
-                            continue;
-                        }
-                        map[i][j] = 'Q';
-                        qu.emplace(i, j);
-                        if (!l[i-j+n])
-                            l[i-j+n] = 1;
-                        if (!r[i+j])
-                            r[i+j] = 1;
-                        if (h[i]){
-                            int flag = 0;
-                            int num = holeh[i][0];
-                            for (int idx = 1; idx <= num; idx++){
-                                if (holeh[i][idx] <= j)
-                                    continue;        
-                                j = holeh[i][idx] + 1;
-                                flag = 1;
-                                break;
-                            }
-                            if (!flag){
-                                i++;
-                                j = 0;
-                            }
-                        }
-                        else{
-                            i++;
-                            j = 0;
-                        }
-                    }
-                    else{
+                // There is at least one hole on the vertical line or left diagonal or right diagonal
+                case 1:
+                    // If there is a queen that attacks (i, j) on the vertical line
+                    if (v[j] && !checkV(i, j, n)){
                         j++;
+                        continue;
                     }
-                    break;
-                case 2:
-                    if (checkL(i, j, n)){
-                        if (r[i+j] && !checkR(i, j, n)){
-                            j++;
-                            continue;
-                        }
-                        map[i][j]='Q';
-                        qu.emplace(i, j);
-                        v[j] = 1;
-                        if (!r[i+j])
-                            r[i+j] = 1;
-                        if (h[i]){
-                            int flag = 0;
-                            int num = holeh[i][0];
-                            for (int idx = 1; idx <= num; idx++){
-                                if (holeh[i][idx] <= j)
-                                    continue;        
-                                j = holeh[i][idx] + 1;
-                                flag = 1;
-                                break;
-                            }
-                            if (!flag){
-                                i++;
-                                j = 0;
-                            }
-                        }
-                        else{
-                            i++;
-                            j = 0;
-                        }
-                    }
-                    else{
+                    // If there is a queen that attacks (i, j) on the left diagonal
+                    if (l[i-j+n] && !checkL(i, j, n)){
                         j++;
+                        continue;
                     }
-                    break;
-                case 3:
-                    if (checkR(i, j, n)){
-                        map[i][j] = 'Q';
-                        qu.emplace(i, j);
-                        v[j] = l[i-j+n] = 1;
-                        if (h[i]){
-                            int flag = 0;
-                            int num = holeh[i][0];
-                            for (int idx = 1; idx <= num; idx++){
-                                if (holeh[i][idx] <= j)
-                                    continue;        
-                                j = holeh[i][idx] + 1;
-                                flag = 1;
-                                break;
-                            }
-                            if (!flag){
-                                i++;
-                                j = 0;
-                            }
-                        }
-                        else{
-                            i++;
-                            j = 0;
-                        }
-                    }
-                    else{
+                    // If there is a queen that attacks (i, j) on the right diagonal
+                    if (r[i+j] && !checkR(i, j, n)){
                         j++;
+                        continue;
                     }
-                    break;
-                case 4:
+                    // place a queen on (i, j)
                     map[i][j] = 'Q';
                     qu.emplace(i, j);
-                    v[j] = l[i-j+n] = r[i+j] = 1;
+                    if (!v[j])
+                        v[j] = 1;
+                    if (!l[i-j+n])
+                        l[i-j+n] = 1;
+                    if (!r[i+j])
+                        r[i+j] = 1;
+                    // If there is a hole on the horizontal line passing through (i, j)
                     if (h[i]){
                         int flag = 0;
                         int num = holeh[i][0];
+                        // find the nearest hole on the right side of (i, j)
                         for (int idx = 1; idx <= num; idx++){
                             if (holeh[i][idx] <= j)
                                 continue;        
@@ -311,11 +195,13 @@ void iterative_N(int n){
                             flag = 1;
                             break;
                         }
+                        //there is no hole on the right side of (i, j)
                         if (!flag){
                             i++;
                             j = 0;
-                       }
+                        }
                     }
+                    // there is no hole on the horizontal line passing through (i, j)
                     else{
                         i++;
                         j = 0;
@@ -324,6 +210,7 @@ void iterative_N(int n){
             }
             break;
         }
+        // If we already placed n queens on the map
         if (qu.size() == n){
             cnt++;
             i = qu.top().first;
@@ -338,10 +225,12 @@ void iterative_N(int n){
                 r[i+j] = 0;
             j++;
         }
+        // index out of range: 0 <= i < n , 0 <= j < n
         if (j == n){
             i++;
             j = 0;
         }
+        // finished to check from 0 th row to n-1 th row, but could not place n queens 
         if (i == n){
             i = qu.top().first;
             j = qu.top().second;
@@ -354,15 +243,13 @@ void iterative_N(int n){
             if (r[i+j] != 'H')
                 r[i+j] = 0;
             j++;
-            if (qu.size() == 0 && (i == n-1 || i > holenum))
+            if (qu.size() == 0 &&i == n-1 && j >= n-2)
                 return;
-        }
-        if (qu.size() == 0 && i > holenum){
-            return;
         }
     }
 }
 
+// makeMap : mark 'H' if there is a hole, '*' otherwise.
 void makeMap(FILE *fd, int n, int holenum){
     for (int i=0;i<n;i++){
         for (int j = 0;j < n; j++)
@@ -379,7 +266,7 @@ void makeMap(FILE *fd, int n, int holenum){
 }
 
 int main(int argc, char *argv[]){
-    int n, t1, t2, mode;
+    int n, holenum, t1, t2, mode;
     //There should be four arguments, i.e. executable file, mode, input file and output file.
     if (argc!=4){
         printf("There should be four arguments. Check once again.\n");
@@ -407,19 +294,23 @@ int main(int argc, char *argv[]){
         fclose(fpin);
         return -1;
     }
-
+    //make a map and arrays l, r, v, h
     fscanf(fpin, "%d %d", &n, &holenum);
     makeMap(fpin, n, holenum);
+    
     cnt = 0;
     switch(mode){
+        // iterative backtracking algorithm
         case 1:
             iterative_N(n);
             break;
+        // recursive backtracking algorithm
         case 2:
             recursive_N(0, 0, 0, n);
             break;
     }
 
+    // write the number of possible ways that we can place n queens properly into the output file
     fprintf(fpout, "%d\n", cnt);
     fclose(fpin);
     fclose(fpout);
